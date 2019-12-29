@@ -8,18 +8,20 @@ with open('courseAPI.json') as json_file:
     data = json.load(json_file)
 
 course_data = data.pop("courses")
+course_names = list(course_data.keys())
 
-nr_vertices = len(list(course_data.keys()))
-v_label = list(map(str, range(nr_vertices)))
-G = Graph.Tree(nr_vertices, 2) # 2 stands for children number
+nr_vertices = len(course_names)
+v_label = course_names
+G = Graph()
+G.add_vertices(course_names)
 lay = G.layout('rt')
 
 position = {k: lay[k] for k in range(nr_vertices)}
 Y = [lay[k][1] for k in range(nr_vertices)]
 M = max(Y)
 
-es = EdgeSeq(G) # sequence of edges
-E = [e.tuple for e in G.es] # list of edges
+es = [] # sequence of edges
+E = [] # list of edges
 
 L = len(position)
 Xn = [position[k][0] for k in range(L)]
@@ -45,7 +47,7 @@ fig.add_trace(go.Scatter(x=Xn,
                   mode='markers',
                   name='bla',
                   marker=dict(symbol='circle-dot',
-                                size=18,
+                                size=50,
                                 color='#6175c1',    #'#DB4551',
                                 line=dict(color='rgb(50,50,50)', width=1)
                                 ),
