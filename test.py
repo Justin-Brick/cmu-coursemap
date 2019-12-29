@@ -9,7 +9,7 @@ with open('courseAPI.json') as json_file:
 
 course_data = data.pop("courses")
 
-nr_vertices = size(course_data)
+nr_vertices = len(list(course_data.keys()))
 v_label = list(map(str, range(nr_vertices)))
 G = Graph.Tree(nr_vertices, 2) # 2 stands for children number
 lay = G.layout('rt')
@@ -30,7 +30,7 @@ for edge in E:
     Xe+=[position[edge[0]][0],position[edge[1]][0], None]
     Ye+=[2*M-position[edge[0]][1],2*M-position[edge[1]][1], None]
 
-labels = v_label
+labels = list(course_data.keys())
 
 import plotly.graph_objects as go
 fig = go.Figure()
@@ -62,7 +62,7 @@ def make_annotations(pos, text, font_size=10, font_color='rgb(250,250,250)'):
     for k in range(L):
         annotations.append(
             dict(
-                text=course_data.keys(), # or replace labels with a different list for the text within the circle
+                text=labels[k], # or replace labels with a different list for the text within the circle
                 x=pos[k][0], y=2*M-position[k][1],
                 xref='x1', yref='y1',
                 font=dict(color=font_color, size=font_size),
