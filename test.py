@@ -1,7 +1,7 @@
 # https://plot.ly/python/tree-plots/
 import igraph
 from igraph import Graph, EdgeSeq
-nr_vertices = 25
+nr_vertices = 10
 v_label = list(map(str, range(nr_vertices)))
 G = Graph.Tree(nr_vertices, 2) # 2 stands for children number
 lay = G.layout('rt')
