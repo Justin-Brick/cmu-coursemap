@@ -1,7 +1,15 @@
 # https://plot.ly/python/tree-plots/
 import igraph
 from igraph import Graph, EdgeSeq
-nr_vertices = 25
+import json
+
+# get courses list
+with open('courseAPI.json') as json_file:
+    data = json.load(json_file)
+
+course_data = data.pop("courses")
+
+nr_vertices = size(course_data)
 v_label = list(map(str, range(nr_vertices)))
 G = Graph.Tree(nr_vertices, 2) # 2 stands for children number
 lay = G.layout('rt')
@@ -54,7 +62,7 @@ def make_annotations(pos, text, font_size=10, font_color='rgb(250,250,250)'):
     for k in range(L):
         annotations.append(
             dict(
-                text=labels[k], # or replace labels with a different list for the text within the circle
+                text=course_data.keys(), # or replace labels with a different list for the text within the circle
                 x=pos[k][0], y=2*M-position[k][1],
                 xref='x1', yref='y1',
                 font=dict(color=font_color, size=font_size),
