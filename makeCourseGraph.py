@@ -13,19 +13,40 @@ class Course:
 			self.pre = []
 		if(self.coIn == None):
 			self.coIn = []
+			
+		if(course["prereqs_obj"]["invert"]):
+			self.pre = Course.invert(self.pre)
+		if(course["coreqs_obj"]["invert"]):
+			self.coIn = Course.invert(self.coIn)
 	
-	def updateReq(self, courseList):
-		for rl in self.pre:
+	def updateReqs(self, courseList):
+		Course.updateReq(courseList, self, (lambda x: x.pre), (lambda x: x.post))
+		Course.updateReq(courseList, self, (lambda x: x.coIn), (lambda x: x.coOut))
+					
+	def updateReq(courseList, core, coreAccess, otherAccess):
+		for rl in coreAccess(core):
 			for cn in rl:
 				c = courseList.get(cn)
-				if(c != None and not(self.courseNum in c.post)):
-					c.post.append(self.courseNum)
+				if(c != None and core.courseNum not in otherAccess(c)):
+					otherAccess(c).append(core.courseNum)
+					
+	def invert(reqs):
+		newreq = []
+		if(len(reqs) == 1):
+			for course in reqs[0]:
+				newreq.append([course])
+			return newreq
 		
-		for rl in self.coIn:
-			for cn in rl:
-				c =  courseList.get(cn)
-				if(c != None and not(self.courseNum in c.coOut)):
-					c.coOut.append(self.courseNum)
+		courses = reqs.pop(0)
+		subreqs = Course.invert(reqs)
+		
+		for course in courses:
+			for c in subreqs:
+				copy = c.copy()
+				copy.append(course)
+				newreq.append(copy)
+				
+		return newreq
 
 def loadCourses():
 	with open("out.json") as json_file:
@@ -36,7 +57,7 @@ def loadCourses():
 		courseList[cn] = Course(cn, courses[cn])
 		
 	for cn in courseList:
-		courseList[cn].updateReq(courseList)
+		courseList[cn].updateReqs(courseList)
 		
 	return courseList
 
