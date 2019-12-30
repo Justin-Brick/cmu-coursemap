@@ -7,21 +7,58 @@ import json
 with open('courseAPI.json') as json_file:
     data = json.load(json_file)
 
+# store data
 course_data = data.pop("courses")
 course_names = list(course_data.keys())
+edges_list = [("15-122", "15-150"), ("15-150", "15-210"), ("15-112", "15-122"), ("15-110", "15-122")]
 
-nr_vertices = len(course_names)
-v_label = course_names
+# user-defined variables
+depth = 1 # how far to explore in the course map
+toSearch = "15-122" # the course to search for
+
+''' TRIMMING THE DATA '''
+focus = set([toSearch]) # the final list of vertices, trimmed
+focus_edges = set([]) # the final list of edges, trimmed
+
+# trim edge list
+forwardSearch = [toSearch]
+backwardSearch = [toSearch]
+
+for i in range(depth):
+    forwardAdjacencies = []
+    backwardAdjacencies = []
+    for (c1, c2) in edges_list:
+        if (c1 in forwardSearch):
+            focus_edges.add((c1, c2))
+            forwardAdjacencies.append(c2)
+            focus.add(c1)
+            focus.add(c2)
+        if (c2 in backwardSearch):
+            focus_edges.add((c1, c2))
+            backwardAdjacencies.append(c1)
+            focus.add(c1)
+            focus.add(c2)
+    forwardSearch += list(set(forwardAdjacencies) - set(forwardSearch))
+    backwardSearch += list(set(backwardAdjacencies) - set(backwardSearch))
+
+# revert to lists
+focus = list(focus)
+focus_edges = list(focus_edges)
+
+''' GENERATE THE GRAPH AND PLOT '''
+nr_vertices = len(focus)
+v_label = focus
 G = Graph()
-G.add_vertices(course_names)
+G.add_vertices(focus)
+G.add_edges(focus_edges)
 lay = G.layout('rt')
 
 position = {k: lay[k] for k in range(nr_vertices)}
 Y = [lay[k][1] for k in range(nr_vertices)]
 M = max(Y)
 
-es = [] # sequence of edges
-E = [] # list of edges
+es = EdgeSeq(G) # sequence of edges
+E = [e.tuple for e in es] # list of edges
 
 L = len(position)
 Xn = [position[k][0] for k in range(L)]
@@ -32,7 +69,7 @@ for edge in E:
     Xe+=[position[edge[0]][0],position[edge[1]][0], None]
     Ye+=[2*M-position[edge[0]][1],2*M-position[edge[1]][1], None]
 
-labels = list(course_data.keys())
+labels = focus
 
 import plotly.graph_objects as go
 fig = go.Figure()
