@@ -6,15 +6,22 @@ import json
 # get courses list
 with open('courseAPI.json') as json_file:
     data = json.load(json_file)
+    
+# get edge list
+with open("edges.json") as json_file:
+    edge_list_raw = json.load(json_file)
+edges_list = []
+for edge in edge_list_raw:
+    edges_list.append(tuple(edge))
 
 # store data
 course_data = data.pop("courses")
 course_names = list(course_data.keys())
-edges_list = [("15-122", "15-150"), ("15-150", "15-210"), ("15-112", "15-122"), ("15-110", "15-122")]
+#edges_list = [("15-122", "15-150"), ("15-150", "15-210"), ("15-112", "15-122"), ("15-110", "15-122")]
 
 # user-defined variables
-depth = 1 # how far to explore in the course map
-toSearch = "15-122" # the course to search for
+depth = 2 # how far to explore in the course map
+toSearch = "15-251" # the course to search for
 
 ''' TRIMMING THE DATA '''
 focus = set([toSearch]) # the final list of vertices, trimmed
