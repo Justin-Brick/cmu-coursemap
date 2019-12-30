@@ -29,7 +29,7 @@ class Course:
 				c = courseList.get(cn)
 				if(c != None and core.courseNum not in otherAccess(c)):
 					otherAccess(c).append(core.courseNum)
-					
+
 	def invert(reqs):
 		newreq = []
 		if(len(reqs) == 1):
@@ -49,7 +49,7 @@ class Course:
 		return newreq
 
 def loadCourses():
-	with open("out.json") as json_file:
+	with open("courseAPI.json") as json_file:
 		courses = json.load(json_file)["courses"]
 	courseList = {}
 	
@@ -61,6 +61,16 @@ def loadCourses():
 		
 	return courseList
 
+def generateEdgeList(courseList):
+	edgeList = []
+	for course in courseList:
+		for p in courseList[course].post:
+			tupl = (course, p)
+			if(tupl not in edgeList):
+				edgeList.append(tupl)
+				
+	return edgeList
+
 def coursePrint(courseList, c):
 	print("### " + c + " ###")
 	print("prereqs: ", clist[c].pre)
@@ -68,9 +78,18 @@ def coursePrint(courseList, c):
 	print("used as coreq: ", clist[c].coOut)
 	print("postreqs: ", clist[c].post)
 	print()
-	
-clist = loadCourses()
 
-coursePrint(clist, "15-122")
-coursePrint(clist, "15-251")
-coursePrint(clist, "21-127")
+def generate():
+	clist = loadCourses()
+	edgeList = generateEdgeList(clist)
+	
+	#with open("courses.json", "w") as json_file:
+	#	courses = json.dump(clist, json_file)
+	with open("edges.json", "w") as json_file:
+		courses = json.dump(edgeList, json_file)
+	
+	#coursePrint(clist, "15-122")
+	#coursePrint(clist, "15-251")
+	#coursePrint(clist, "21-127")
+
+generate()
