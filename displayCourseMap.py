@@ -17,15 +17,16 @@ for edge in edge_list_raw:
 # store data
 course_data = data.pop("courses")
 course_names = list(course_data.keys())
-#edges_list = [("15-122", "15-150"), ("15-150", "15-210"), ("15-112", "15-122"), ("15-110", "15-122")]
 
 # user-defined variables
-depth = 2 # how far to explore in the course map
+depth = 1 # how far to explore in the course map
 toSearch = "15-251" # the course to search for
 
 ''' TRIMMING THE DATA '''
-focus = set([toSearch]) # the final list of vertices, trimmed
-focus_edges = set([]) # the final list of edges, trimmed
+left_focus = set([])
+right_focus = set([])
+left_focus_edges = set([])
+right_focus_edges = set([])
 
 # trim edge list
 forwardSearch = [toSearch]
@@ -36,21 +37,30 @@ for i in range(depth):
     backwardAdjacencies = []
     for (c1, c2) in edges_list:
         if (c1 in forwardSearch):
-            focus_edges.add((c1, c2))
+            right_focus_edges.add((c1, c2))
             forwardAdjacencies.append(c2)
-            focus.add(c1)
-            focus.add(c2)
+            right_focus.add(c1)
+            right_focus.add(c2)
         if (c2 in backwardSearch):
-            focus_edges.add((c1, c2))
+            left_focus_edges.add((c1, c2))
             backwardAdjacencies.append(c1)
-            focus.add(c1)
-            focus.add(c2)
+            left_focus.add(c1)
+            left_focus.add(c2)
     forwardSearch += list(set(forwardAdjacencies) - set(forwardSearch))
     backwardSearch += list(set(backwardAdjacencies) - set(backwardSearch))
 
+# combine left and right
+focus = left_focus.union(right_focus).union([toSearch]) 
+focus_edges = left_focus_edges.union(right_focus_edges)
+
 # revert to lists
-focus = list(focus)
-focus_edges = list(focus_edges)
+focus = list(focus) # final list of vertices
+focus_edges = list(focus_edges) # final list of edges
+
+right_focus = list(right_focus)
+left_focus = list(left_focus)
+right_focus_edges = list(right_focus_edges)
+left_focus_edges = list(left_focus_edges)
 
 ''' GENERATE THE GRAPH AND PLOT '''
 nr_vertices = len(focus)
@@ -58,8 +68,9 @@ v_label = focus
 G = Graph()
 G.add_vertices(focus)
 G.add_edges(focus_edges)
-lay = G.layout('rt')
 
+lay = G.layout('rt') # represented as a list of coordinates
+print(lay.coords)
 position = {k: lay[k] for k in range(nr_vertices)}
 Y = [lay[k][1] for k in range(nr_vertices)]
 M = max(Y)
@@ -67,9 +78,14 @@ M = max(Y)
 es = EdgeSeq(G) # sequence of edges
 E = [e.tuple for e in es] # list of edges
 
+# length of the layout
 L = len(position)
+
+# positions of nodes
 Xn = [position[k][0] for k in range(L)]
 Yn = [2*M-position[k][1] for k in range(L)]
+
+# positions of edges
 Xe = []
 Ye = []
 for edge in E:
@@ -80,13 +96,17 @@ labels = focus
 
 import plotly.graph_objects as go
 fig = go.Figure()
+
+# plot edges
 fig.add_trace(go.Scatter(x=Xe,
                    y=Ye,
                    mode='lines',
                    line=dict(color='rgb(210,210,210)', width=1),
                    hoverinfo='none'
                    ))
-fig.add_trace(go.Scatter(x=Xn,
+
+# plot nodes
+fig.add_trace(go.Scatter(x=Xn, 
                   y=Yn,
                   mode='markers',
                   name='bla',
@@ -123,7 +143,7 @@ axis = dict(showline=False, # hide axis line, grid, ticklabels and  title
             showticklabels=False,
             )
 
-fig.update_layout(title= 'Tree with Reingold-Tilford Layout',
+fig.update_layout(title= 'CMU Course Map for ' + toSearch,
               annotations=make_annotations(position, v_label),
               font_size=12,
               showlegend=False,
